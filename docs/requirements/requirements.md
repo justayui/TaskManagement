@@ -154,7 +154,7 @@
 
 ## 13. 技術構成
 
-フロントエンドはReact（想定）、バックエンドはAPIサーバー、データベースはRDBを想定する。フレームワーク・ホスティング等の詳細は設計時に選定する。
+フロントエンドはReact（TypeScript／Vite）、バックエンドはJava・Spring Boot（Gradle）、データベースはPostgreSQLを採用する。フロントエンド・バックエンドはREST API（JSON）で連携し、ローカル開発環境はDocker Composeで構築する。ホスティングは未定。
 
 詳細は [技術構成書](tech-stack.md) を参照。
 
