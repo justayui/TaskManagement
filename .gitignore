@@ -5,3 +5,6 @@ backend/build/
 backend/.gradle/
 backend/bin/
 backend/out/
+
+# environment variables
+.env
