@@ -25,7 +25,7 @@
 | 項目 | 選定内容 | 補足・理由 |
 |---|---|---|
 | 言語 | Java 21（LTS） | 指定による |
-| フレームワーク | Spring Boot 3.x系（最新安定版） | 指定による |
+| フレームワーク | Spring Boot 4.x系（最新安定版） | 指定による。当初3.x系を想定していたが、実装開始時点（2026年8月）でSpring Initializrが3.x系の生成を終了していたため4.1系を採用 |
 | ビルドツール | Gradle | - |
 | Web/API | Spring Web（REST API） | フロントエンドとJSON形式でデータ連携（F-16, F-17） |
 | データアクセス | Spring Data JPA（Hibernate） | BOARD/LIST/CARDのCRUD（[データ要件書](data.md)） |
