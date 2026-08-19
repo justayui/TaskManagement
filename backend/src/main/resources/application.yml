@@ -1,3 +1,11 @@
 spring:
   application:
     name: backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:taskmanagement}
+    username: ${DB_USER:taskmanagement}
+    password: ${DB_PASSWORD:taskmanagement}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
