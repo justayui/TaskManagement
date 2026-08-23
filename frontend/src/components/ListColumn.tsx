@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { createCard } from '../api';
@@ -41,6 +41,7 @@ function sortCards(cards: Card[], mode: SortMode): Card[] {
 }
 
 export default function ListColumn({ list, cards, onCardCreated }: Props) {
+  const [isAdding, setIsAdding] = useState(false);
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<Priority | ''>('');
   const [dueDate, setDueDate] = useState('');
@@ -50,6 +51,40 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
   const dragDisabled = sortMode !== 'manual';
   const { setNodeRef } = useDroppable({ id: list.id, disabled: dragDisabled });
   const displayCards = sortCards(cards, sortMode);
+  const formRef = useRef<HTMLFormElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  const closeForm = () => {
+    setIsAdding(false);
+    setTitle('');
+    setPriority('');
+    setDueDate('');
+    setError(null);
+  };
+
+  useEffect(() => {
+    if (!isAdding) {
+      return;
+    }
+    titleInputRef.current?.focus();
+
+    const handlePointerDown = (e: MouseEvent) => {
+      if (formRef.current && !formRef.current.contains(e.target as Node)) {
+        closeForm();
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeForm();
+      }
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAdding]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -67,9 +102,7 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
         dueDate: dueDate || null,
       });
       onCardCreated(created);
-      setTitle('');
-      setPriority('');
-      setDueDate('');
+      closeForm();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'カードの追加に失敗しました');
     } finally {
@@ -103,44 +136,66 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
           ))}
         </SortableContext>
       </div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-1.5 px-2 pb-2.5">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="カードのタイトルを入力"
-          disabled={submitting}
-          className="text-sm rounded-md border border-gray-300 bg-white px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-        <div className="flex gap-1.5">
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as Priority | '')}
-            disabled={submitting}
-            className="text-xs flex-1 rounded-md border border-gray-300 bg-white px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="">優先度: 未設定</option>
-            <option value="HIGH">優先度: 高</option>
-            <option value="MEDIUM">優先度: 中</option>
-            <option value="LOW">優先度: 低</option>
-          </select>
+      {isAdding ? (
+        <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-1.5 px-2 pb-2.5">
           <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
+            ref={titleInputRef}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="カードのタイトルを入力"
             disabled={submitting}
-            className="text-xs flex-1 rounded-md border border-gray-300 bg-white px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="text-sm rounded-md border border-gray-300 bg-white px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
+          <div className="flex gap-1.5">
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as Priority | '')}
+              disabled={submitting}
+              className="text-xs flex-1 rounded-md border border-gray-300 bg-white px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">優先度: 未設定</option>
+              <option value="HIGH">優先度: 高</option>
+              <option value="MEDIUM">優先度: 中</option>
+              <option value="LOW">優先度: 低</option>
+            </select>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              disabled={submitting}
+              className="text-xs flex-1 rounded-md border border-gray-300 bg-white px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <div className="flex items-center gap-1.5">
+            <button
+              type="submit"
+              disabled={!title.trim() || submitting}
+              className="text-sm rounded-md bg-blue-600 text-white px-2.5 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              追加
+            </button>
+            <button
+              type="button"
+              onClick={closeForm}
+              className="text-sm text-gray-500 hover:bg-black/5 rounded-md px-2 py-1"
+            >
+              閉じる
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="px-2 pb-2.5">
+          <button
+            type="button"
+            onClick={() => setIsAdding(true)}
+            className="text-sm text-left w-full text-gray-600 hover:bg-black/5 rounded-md px-2.5 py-1"
+          >
+            + カードを追加する
+          </button>
         </div>
-        {error && <p className="text-xs text-red-600">{error}</p>}
-        <button
-          type="submit"
-          disabled={!title.trim() || submitting}
-          className="text-sm text-left text-gray-600 hover:bg-black/5 rounded-md px-2.5 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          + カードを追加
-        </button>
-      </form>
+      )}
     </div>
   );
 }
