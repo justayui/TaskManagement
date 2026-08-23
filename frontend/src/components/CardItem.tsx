@@ -4,6 +4,7 @@ import type { Card } from '../types';
 
 interface Props {
   card: Card;
+  disabled?: boolean;
 }
 
 const PRIORITY_STYLES: Record<string, { label: string; className: string }> = {
@@ -32,9 +33,10 @@ function dueDateBadgeClassName(dueDate: string): string {
   return 'bg-gray-100 text-gray-600';
 }
 
-export default function CardItem({ card }: Props) {
+export default function CardItem({ card, disabled = false }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
+    disabled,
   });
 
   const style = {
@@ -51,7 +53,7 @@ export default function CardItem({ card }: Props) {
       style={style}
       {...attributes}
       {...listeners}
-      className="bg-white rounded-md shadow-sm px-2.5 py-2 cursor-grab active:cursor-grabbing touch-none"
+      className={`bg-white rounded-md shadow-sm px-2.5 py-2 touch-none ${disabled ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
     >
       <p className="text-sm font-medium whitespace-pre-wrap break-words">{card.title}</p>
       {card.description && (
