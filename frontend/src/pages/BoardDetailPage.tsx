@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchBoard, fetchBoardLists, fetchCards } from '../api';
+import ListColumn from '../components/ListColumn';
 import type { Board, Card, TaskList } from '../types';
 
 interface Props {
@@ -43,6 +44,10 @@ export default function BoardDetailPage({ boardId, onBack }: Props) {
   const cardsByListId = groupCardsByListId(cards);
   const sortedLists = [...lists].sort((a, b) => a.order - b.order);
 
+  const handleCardCreated = (card: Card) => {
+    setCards((prev) => [...prev, card]);
+  };
+
   return (
     <main className="px-6 py-5">
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-4">
@@ -62,29 +67,14 @@ export default function BoardDetailPage({ boardId, onBack }: Props) {
 
       {!loading && !error && (
         <div className="flex items-start gap-3 overflow-x-auto pb-3">
-          {sortedLists.map((list) => {
-            const listCards = cardsByListId.get(list.id) ?? [];
-            return (
-              <div key={list.id} className="flex-none w-[272px] bg-gray-200 rounded-lg flex flex-col">
-                <div className="flex items-center gap-2 px-3 pt-2.5 pb-1.5">
-                  <span className="text-sm font-semibold flex-1 truncate">{list.name}</span>
-                  <span className="text-xs text-gray-500 bg-black/5 rounded-full px-2 py-0.5">
-                    {listCards.length}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2 px-2 pb-2 overflow-y-auto">
-                  {listCards.map((card) => (
-                    <div key={card.id} className="bg-white rounded-md shadow-sm px-2.5 py-2">
-                      <p className="text-sm font-medium whitespace-pre-wrap break-words">{card.title}</p>
-                      {card.description && (
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{card.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+          {sortedLists.map((list) => (
+            <ListColumn
+              key={list.id}
+              list={list}
+              cards={cardsByListId.get(list.id) ?? []}
+              onCardCreated={handleCardCreated}
+            />
+          ))}
         </div>
       )}
     </main>
