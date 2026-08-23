@@ -10,6 +10,18 @@ async function apiGet<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status} ${path}`);
+  }
+  return res.json() as Promise<T>;
+}
+
 export function fetchBoards(): Promise<Board[]> {
   return apiGet<Board[]>('/api/boards');
 }
@@ -24,4 +36,8 @@ export function fetchBoardLists(boardId: string): Promise<TaskList[]> {
 
 export function fetchCards(): Promise<Card[]> {
   return apiGet<Card[]>('/api/cards');
+}
+
+export function createCard(input: { listId: string; title: string; description?: string | null }): Promise<Card> {
+  return apiPost<Card>('/api/cards', input);
 }
