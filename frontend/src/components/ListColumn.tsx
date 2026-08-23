@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { createCard } from '../api';
 import CardItem from './CardItem';
-import type { Card, TaskList } from '../types';
+import type { Card, Priority, TaskList } from '../types';
 
 interface Props {
   list: TaskList;
@@ -13,6 +13,8 @@ interface Props {
 
 export default function ListColumn({ list, cards, onCardCreated }: Props) {
   const [title, setTitle] = useState('');
+  const [priority, setPriority] = useState<Priority | ''>('');
+  const [dueDate, setDueDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { setNodeRef } = useDroppable({ id: list.id });
@@ -26,9 +28,16 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
     setSubmitting(true);
     setError(null);
     try {
-      const created = await createCard({ listId: list.id, title: trimmed });
+      const created = await createCard({
+        listId: list.id,
+        title: trimmed,
+        priority: priority || null,
+        dueDate: dueDate || null,
+      });
       onCardCreated(created);
       setTitle('');
+      setPriority('');
+      setDueDate('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'カードの追加に失敗しました');
     } finally {
@@ -60,6 +69,26 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
           disabled={submitting}
           className="text-sm rounded-md border border-gray-300 bg-white px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
+        <div className="flex gap-1.5">
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value as Priority | '')}
+            disabled={submitting}
+            className="text-xs flex-1 rounded-md border border-gray-300 bg-white px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">優先度: 未設定</option>
+            <option value="HIGH">優先度: 高</option>
+            <option value="MEDIUM">優先度: 中</option>
+            <option value="LOW">優先度: 低</option>
+          </select>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            disabled={submitting}
+            className="text-xs flex-1 rounded-md border border-gray-300 bg-white px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
         {error && <p className="text-xs text-red-600">{error}</p>}
         <button
           type="submit"
