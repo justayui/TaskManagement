@@ -10,5 +10,7 @@ public interface CardRepository extends JpaRepository<Card, UUID> {
 
     List<Card> findByListId(UUID listId);
 
+    List<Card> findByListIdOrderByOrderAsc(UUID listId);
+
     int countByListId(UUID listId);
 }

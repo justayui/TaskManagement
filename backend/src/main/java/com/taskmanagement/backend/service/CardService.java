@@ -2,6 +2,7 @@ package com.taskmanagement.backend.service;
 
 import com.taskmanagement.backend.dto.CardResponse;
 import com.taskmanagement.backend.dto.CreateCardRequest;
+import com.taskmanagement.backend.dto.MoveCardRequest;
 import com.taskmanagement.backend.entity.Card;
 import com.taskmanagement.backend.entity.TaskList;
 import com.taskmanagement.backend.repository.CardRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,5 +62,46 @@ public class CardService {
 
         Card saved = cardRepository.save(card);
         return CardResponse.from(saved);
+    }
+
+    @Transactional
+    public List<CardResponse> moveCard(UUID cardId, MoveCardRequest request) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found: " + cardId));
+        TaskList destinationList = taskListRepository.findById(request.listId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "List not found: " + request.listId()));
+
+        UUID sourceListId = card.getList().getId();
+        List<Card> touched = new ArrayList<>();
+
+        if (sourceListId.equals(request.listId())) {
+            List<Card> listCards = cardRepository.findByListIdOrderByOrderAsc(sourceListId);
+            listCards.removeIf(c -> c.getId().equals(cardId));
+            int targetIndex = Math.clamp(request.order(), 0, listCards.size());
+            listCards.add(targetIndex, card);
+            renumber(listCards);
+            touched.addAll(listCards);
+        } else {
+            List<Card> sourceCards = cardRepository.findByListIdOrderByOrderAsc(sourceListId);
+            sourceCards.removeIf(c -> c.getId().equals(cardId));
+            renumber(sourceCards);
+            touched.addAll(sourceCards);
+
+            List<Card> destinationCards = cardRepository.findByListIdOrderByOrderAsc(request.listId());
+            int targetIndex = Math.clamp(request.order(), 0, destinationCards.size());
+            card.setList(destinationList);
+            destinationCards.add(targetIndex, card);
+            renumber(destinationCards);
+            touched.addAll(destinationCards);
+        }
+
+        List<Card> saved = cardRepository.saveAll(touched);
+        return saved.stream().map(CardResponse::from).toList();
+    }
+
+    private void renumber(List<Card> cards) {
+        for (int i = 0; i < cards.size(); i++) {
+            cards.get(i).setOrder(i);
+        }
     }
 }

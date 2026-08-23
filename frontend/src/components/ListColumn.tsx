@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { createCard } from '../api';
+import CardItem from './CardItem';
 import type { Card, TaskList } from '../types';
 
 interface Props {
@@ -12,6 +15,7 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
   const [title, setTitle] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { setNodeRef } = useDroppable({ id: list.id });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -40,15 +44,12 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
           {cards.length}
         </span>
       </div>
-      <div className="flex flex-col gap-2 px-2 pb-2 overflow-y-auto">
-        {cards.map((card) => (
-          <div key={card.id} className="bg-white rounded-md shadow-sm px-2.5 py-2">
-            <p className="text-sm font-medium whitespace-pre-wrap break-words">{card.title}</p>
-            {card.description && (
-              <p className="text-xs text-gray-500 mt-1 line-clamp-2">{card.description}</p>
-            )}
-          </div>
-        ))}
+      <div ref={setNodeRef} className="flex flex-col gap-2 px-2 pb-2 overflow-y-auto min-h-[8px]">
+        <SortableContext items={cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
+          {cards.map((card) => (
+            <CardItem key={card.id} card={card} />
+          ))}
+        </SortableContext>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-1.5 px-2 pb-2.5">
         <input

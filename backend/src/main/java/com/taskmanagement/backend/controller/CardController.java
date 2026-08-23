@@ -2,10 +2,12 @@ package com.taskmanagement.backend.controller;
 
 import com.taskmanagement.backend.dto.CardResponse;
 import com.taskmanagement.backend.dto.CreateCardRequest;
+import com.taskmanagement.backend.dto.MoveCardRequest;
 import com.taskmanagement.backend.service.CardService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,5 +45,10 @@ public class CardController {
     public ResponseEntity<CardResponse> createCard(@RequestBody CreateCardRequest request) {
         CardResponse created = cardService.createCard(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PatchMapping("/{id}/position")
+    public List<CardResponse> moveCard(@PathVariable UUID id, @RequestBody MoveCardRequest request) {
+        return cardService.moveCard(id, request);
     }
 }
