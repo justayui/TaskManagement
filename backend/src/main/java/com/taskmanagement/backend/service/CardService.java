@@ -58,6 +58,8 @@ public class CardService {
         card.setList(list);
         card.setTitle(request.title());
         card.setDescription(request.description());
+        card.setPriority(request.priority());
+        card.setDueDate(request.dueDate());
         card.setOrder(cardRepository.countByListId(request.listId()));
 
         Card saved = cardRepository.save(card);

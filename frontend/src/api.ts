@@ -1,4 +1,4 @@
-import type { Board, Card, TaskList } from './types';
+import type { Board, Card, Priority, TaskList } from './types';
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -50,7 +50,13 @@ export function fetchCards(): Promise<Card[]> {
   return apiGet<Card[]>('/api/cards');
 }
 
-export function createCard(input: { listId: string; title: string; description?: string | null }): Promise<Card> {
+export function createCard(input: {
+  listId: string;
+  title: string;
+  description?: string | null;
+  priority?: Priority | null;
+  dueDate?: string | null;
+}): Promise<Card> {
   return apiPost<Card>('/api/cards', input);
 }
 
