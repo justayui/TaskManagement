@@ -3,6 +3,7 @@ package com.taskmanagement.backend.service;
 import com.taskmanagement.backend.dto.CardResponse;
 import com.taskmanagement.backend.dto.CreateCardRequest;
 import com.taskmanagement.backend.dto.MoveCardRequest;
+import com.taskmanagement.backend.dto.UpdateCardRequest;
 import com.taskmanagement.backend.entity.Card;
 import com.taskmanagement.backend.entity.TaskList;
 import com.taskmanagement.backend.repository.CardRepository;
@@ -61,6 +62,23 @@ public class CardService {
         card.setPriority(request.priority());
         card.setDueDate(request.dueDate());
         card.setOrder(cardRepository.countByListId(request.listId()));
+
+        Card saved = cardRepository.save(card);
+        return CardResponse.from(saved);
+    }
+
+    @Transactional
+    public CardResponse updateCard(UUID id, UpdateCardRequest request) {
+        if (request.title() == null || request.title().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "title is required");
+        }
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found: " + id));
+
+        card.setTitle(request.title());
+        card.setDescription(request.description());
+        card.setPriority(request.priority());
+        card.setDueDate(request.dueDate());
 
         Card saved = cardRepository.save(card);
         return CardResponse.from(saved);

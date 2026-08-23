@@ -60,6 +60,15 @@ export function createCard(input: {
   return apiPost<Card>('/api/cards', input);
 }
 
+export function updateCard(cardId: string, input: {
+  title: string;
+  description?: string | null;
+  priority?: Priority | null;
+  dueDate?: string | null;
+}): Promise<Card> {
+  return apiPatch<Card>(`/api/cards/${cardId}`, input);
+}
+
 export function moveCard(cardId: string, input: { listId: string; order: number }): Promise<Card[]> {
   return apiPatch<Card[]>(`/api/cards/${cardId}/position`, input);
 }

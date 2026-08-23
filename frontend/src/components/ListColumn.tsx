@@ -9,6 +9,7 @@ interface Props {
   list: TaskList;
   cards: Card[];
   onCardCreated: (card: Card) => void;
+  onCardUpdated: (card: Card) => void;
 }
 
 type SortMode = 'manual' | 'priority' | 'dueDate';
@@ -40,9 +41,10 @@ function sortCards(cards: Card[], mode: SortMode): Card[] {
   });
 }
 
-export default function ListColumn({ list, cards, onCardCreated }: Props) {
+export default function ListColumn({ list, cards, onCardCreated, onCardUpdated }: Props) {
   const [isAdding, setIsAdding] = useState(false);
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority | ''>('');
   const [dueDate, setDueDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -57,6 +59,7 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
   const closeForm = () => {
     setIsAdding(false);
     setTitle('');
+    setDescription('');
     setPriority('');
     setDueDate('');
     setError(null);
@@ -98,6 +101,7 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
       const created = await createCard({
         listId: list.id,
         title: trimmed,
+        description: description.trim() || null,
         priority: priority || null,
         dueDate: dueDate || null,
       });
@@ -132,7 +136,7 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
       <div ref={setNodeRef} className="flex flex-col gap-2 px-2 pb-2 overflow-y-auto min-h-[8px]">
         <SortableContext items={displayCards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
           {displayCards.map((card) => (
-            <CardItem key={card.id} card={card} disabled={dragDisabled} />
+            <CardItem key={card.id} card={card} disabled={dragDisabled} onCardUpdated={onCardUpdated} />
           ))}
         </SortableContext>
       </div>
@@ -146,6 +150,14 @@ export default function ListColumn({ list, cards, onCardCreated }: Props) {
             placeholder="カードのタイトルを入力"
             disabled={submitting}
             className="text-sm rounded-md border border-gray-300 bg-white px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="説明(任意)"
+            disabled={submitting}
+            rows={2}
+            className="text-sm rounded-md border border-gray-300 bg-white px-2.5 py-1.5 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           <div className="flex gap-1.5">
             <select

@@ -68,6 +68,10 @@ export default function BoardDetailPage({ boardId, onBack }: Props) {
     setCards((prev) => [...prev, card]);
   };
 
+  const handleCardUpdated = (updated: Card) => {
+    setCards((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  };
+
   const isListId = (id: string) => lists.some((list) => list.id === id);
 
   const containerIdFor = (id: string): string | undefined =>
@@ -187,10 +191,11 @@ export default function BoardDetailPage({ boardId, onBack }: Props) {
                 list={list}
                 cards={cardsByListId.get(list.id) ?? []}
                 onCardCreated={handleCardCreated}
+                onCardUpdated={handleCardUpdated}
               />
             ))}
           </div>
-          <DragOverlay>{activeCard && <CardItem card={activeCard} />}</DragOverlay>
+          <DragOverlay>{activeCard && <CardItem card={activeCard} onCardUpdated={() => {}} />}</DragOverlay>
         </DndContext>
       )}
     </main>
