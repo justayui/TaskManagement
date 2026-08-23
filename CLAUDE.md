@@ -57,7 +57,7 @@ git checkout -b feature/12-add-login-api origin/main
 
 # ローカル動作確認ルール(必須・厳守)
 
-ClaudeCodeが実装内容を動作確認するためローカルでサーバーを起動する際は、以下を必ず守ること。
+ClaudeCodeが実装内容を動作確認するためローカルでサーバーを起動する際は、以下を必ず守ること。具体的なコマンド手順はSkill `.claude/skills/verify-servers/SKILL.md` にも定義しているので、サーバー起動時はそちらを参照・実行する。
 
 ## 1. デフォルトポートを厳守する
 
