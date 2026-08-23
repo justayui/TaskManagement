@@ -6,48 +6,50 @@
 
 本システムはフロントエンド（React）とバックエンド（Spring Boot）を分離し、REST API（JSON）を介して通信する構成とする。データベースにはPostgreSQLを採用する。[非機能要件書](non-functional.md)の想定（学習・検証用途、個人利用規模、高可用性不要）を踏まえ、実績があり学習コストの低い標準的な構成を選定した。なお、以下では一般に「技術スタック」とも呼ばれる内容を扱う。
 
+バージョン欄は実際にプロジェクトへ導入・動作確認済みのバージョンを記載する（2026年8月時点）。「未導入」は設計上の想定はあるが、まだ依存関係やコードとして追加していないもの。
+
 ## 2. フロントエンド
 
-| 項目 | 選定内容 | 補足・理由 |
-|---|---|---|
-| 言語 | TypeScript | 型による保守性・拡張性の確保（[非機能要件書](non-functional.md)の保守性・拡張性要件に対応） |
-| フレームワーク | React | 指定による |
-| ビルドツール | Vite | 高速な開発サーバー・ビルド |
-| ルーティング | React Router | 画面遷移（[画面要件書](screens.md)の3画面構成）の管理 |
-| サーバー状態管理 | TanStack Query | API経由のデータ取得・キャッシュ・再検証（F-16, F-17） |
-| ドラッグ&ドロップ | dnd-kit（@dnd-kit/core） | リスト並び替え・カード移動（F-09, F-14, F-15）。`mockup/`のネイティブHTML5 D&Dを置き換える |
-| HTTPクライアント | Axios | バックエンドAPIとの通信 |
-| スタイリング | CSS Modules | `mockup/css/style.css`のデザインをベースに整理。追加のUIフレームワークは導入しない |
-| テスト | Vitest, React Testing Library | 単体・コンポーネントテスト |
+| 項目 | 選定内容 | バージョン | 補足・理由 |
+|---|---|---|---|
+| 言語 | TypeScript | 6.0.3 | 型による保守性・拡張性の確保（[非機能要件書](non-functional.md)の保守性・拡張性要件に対応） |
+| フレームワーク | React | 19.2.8 | 指定による |
+| ビルドツール | Vite | 8.2.2 | 高速な開発サーバー・ビルド |
+| スタイリング | Tailwind CSS | 4.3.3 | `@tailwindcss/vite`プラグインで導入。ユーティリティクラスでのスタイリング |
+| パッケージ管理 | npm | 11.17.0 | Node.js 24.19.0（LTS）に同梱 |
+| ドラッグ&ドロップ | dnd-kit（@dnd-kit/core） | 未導入 | リスト並び替え・カード移動（F-09, F-14, F-15）用に将来導入予定。現時点は表示のみのスコープのため未追加 |
+
+現時点ではボード一覧・ボード詳細（表示のみ）のスコープのため、ルーティング（React Router）・サーバー状態管理（TanStack Query）・HTTPクライアント（Axios）・テスト（Vitest, React Testing Library）は導入していない。画面遷移はコンポーネントのstateで管理し、API呼び出しはネイティブ`fetch()`を使用する。CRUD・D&D機能の実装時に、必要に応じて改めて導入を検討する。
 
 ## 3. バックエンド
 
-| 項目 | 選定内容 | 補足・理由 |
-|---|---|---|
-| 言語 | Java 21（LTS） | 指定による |
-| フレームワーク | Spring Boot 4.x系（最新安定版） | 指定による。当初3.x系を想定していたが、実装開始時点（2026年8月）でSpring Initializrが3.x系の生成を終了していたため4.1系を採用 |
-| ビルドツール | Gradle | - |
-| Web/API | Spring Web（REST API） | フロントエンドとJSON形式でデータ連携（F-16, F-17） |
-| データアクセス | Spring Data JPA（Hibernate） | BOARD/LIST/CARDのCRUD（[データ要件書](data.md)） |
-| マイグレーション | Flyway | DBスキーマのバージョン管理 |
-| バリデーション | Spring Validation（Jakarta Bean Validation） | APIリクエストの入力チェック |
-| APIドキュメント | springdoc-openapi（Swagger UI） | フロントエンド・バックエンド間のAPI仕様共有 |
-| テスト | JUnit 5, Mockito, Spring Boot Test（MockMvc） | 単体・Controllerテスト |
+| 項目 | 選定内容 | バージョン | 補足・理由 |
+|---|---|---|---|
+| 言語 | Java 21（LTS） | 21.0.11 | 指定による |
+| フレームワーク | Spring Boot 4.x系（最新安定版） | 4.1.0 | 指定による。当初3.x系を想定していたが、実装開始時点（2026年8月）でSpring Initializrが3.x系の生成を終了していたため4.1系を採用 |
+| ビルドツール | Gradle | 9.5.1 | - |
+| Web/API | Spring Web（REST API） | Spring Boot 4.1.0に同梱 | フロントエンドとJSON形式でデータ連携（F-16, F-17） |
+| データアクセス | Spring Data JPA（Hibernate） | Hibernate ORM 7.4.1 | BOARD/LIST/CARDのCRUD（[データ要件書](data.md)） |
+| マイグレーション | Flyway | 未導入 | 現状は`ddl-auto: update`でスキーマを生成。バージョン管理が必要になった時点で別Issueとして導入 |
+| バリデーション | Spring Validation（Jakarta Bean Validation） | 未導入 | APIリクエストの入力チェックは未実装 |
+| APIドキュメント | springdoc-openapi（Swagger UI） | 未導入 | 現状APIドキュメントはこの技術構成書のみ |
+| テスト | JUnit 5, Mockito, Spring Boot Test（MockMvc） | Spring Boot 4.1.0のテストスターターに同梱 | 依存関係は導入済みだが、テストコードはまだ作成していない |
 
 ## 4. データベース
 
-| 項目 | 選定内容 | 補足・理由 |
-|---|---|---|
-| DBMS | PostgreSQL | 指定による |
-| ローカル開発環境 | Docker Composeによるコンテナ起動 | 開発者間で同一のDB環境を再現 |
+| 項目 | 選定内容 | バージョン | 補足・理由 |
+|---|---|---|---|
+| DBMS | PostgreSQL | 16.15（Dockerイメージ`postgres:16-alpine`） | 指定による。2026年8月時点の最新メジャーバージョンは18（19はベータ）だが、動作実績のある16系を継続使用中 |
+| ローカル開発環境 | Docker Composeによるコンテナ起動 | Docker 29.6.2 / Docker Compose v5.3.1 | 開発者間で同一のDB環境を再現 |
 
 ## 5. 開発・実行環境
 
-| 項目 | 選定内容 | 補足・理由 |
-|---|---|---|
-| コンテナ | Docker / Docker Compose | ローカル開発でPostgreSQLコンテナを起動。将来的にバックエンド・フロントエンドを含めたコンテナ化も見据えた構成とする |
-| API方式 | REST API（JSON） | フロントエンド・バックエンド間の通信方式 |
-| CORS | Spring Boot側で開発用オリジンを許可 | フロントエンド開発サーバー（Vite）からのAPIアクセスを可能にする |
+| 項目 | 選定内容 | バージョン | 補足・理由 |
+|---|---|---|---|
+| コンテナ | Docker / Docker Compose | Docker 29.6.2 / Docker Compose v5.3.1 | ローカル開発でPostgreSQLコンテナを起動。将来的にバックエンド・フロントエンドを含めたコンテナ化も見据えた構成とする |
+| API方式 | REST API（JSON） | - | フロントエンド・バックエンド間の通信方式 |
+| CORS | Spring Boot側で開発用オリジンを許可 | - | フロントエンド開発サーバー（Vite, `http://localhost:5173`）からのAPIアクセスを可能にする |
+| バージョン管理 | Git + GitHub | Git 2.54.0 | Issue駆動・ブランチ命名・PR必須のルールで運用（[CLAUDE.md](../../CLAUDE.md)） |
 
 ## 6. ホスティング
 

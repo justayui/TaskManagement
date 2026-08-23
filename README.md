@@ -14,11 +14,12 @@ cd backend
 
 ### フロントエンド(ボード画面)
 
-Node.js等のインストールは不要です。Windows標準のPowerShellのみで動作する簡易サーバーで配信します。
+Node.js(LTS)が必要です。
 
 ```bash
 cd frontend
-./serve.bat                   # http://localhost:5173 をブラウザで自動的に開きます
+npm install
+npm run dev                   # http://localhost:5173 で起動
 ```
 
-`serve.bat`をダブルクリックしても起動できます。バックエンドを先に起動しておいてください。
+バックエンドを先に起動しておいてください。
